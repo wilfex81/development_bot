@@ -4,6 +4,7 @@ import requests
 import json
 import discord
 from discord.ext import commands
+from discord import FFmpegPCMAudio
 
 load_dotenv()
 
@@ -56,7 +57,9 @@ async def on_member_remove(member):
 async def join(ctx):
     if (ctx.author.voice):
         channel = ctx.message.author.voice.channel
-        await channel.connect()
+        voice = await channel.connect()
+        source = FFmpegPCMAudio('music.mp4')
+        player = voice.play(source)
     else:
         await ctx.send("You must be in a voice channel to run this command!!😡")
 
