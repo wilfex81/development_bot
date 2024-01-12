@@ -56,9 +56,9 @@ async def on_member_remove(member):
 @client.command(pass_context=True)
 async def join(ctx):
     if (ctx.author.voice):
-        channel = ctx.message.author.voice.channel
+        channel = ctx.author.voice.channel
         voice = await channel.connect()
-        source = FFmpegPCMAudio('music.mp4')
+        source = discord.FFmpegPCMAudio('music.mp4')
         player = voice.play(source)
     else:
         await ctx.send("You must be in a voice channel to run this command!!😡")
@@ -71,6 +71,25 @@ async def leave(ctx):
         await ctx.send("I left voice channel")
     else:
         await ctx.send("I am not in a voice channel!!😡")
+
+
+@client.command(pass_context=True)
+async def pause(ctx):
+    voice = discord.utils.get(client.voice_clients, guild=ctx.guild)
+    if voice.is_playing():
+        voice.pause()
+    else:
+        await ctx.send("At the moment, there is no audio playing in the channel")
+
+
+@client.command(pass_context=True)
+async def resume(ctx):
+    voice = discord.utils.get(client.voice_clients, guild=ctx.guild)
+    if voice.is_paused():
+        voice.resume()
+    else:
+        await ctx.send("At the moment, no song is paused")
+
 
 TOKEN = os.getenv('BOT_AUTH')
 client.run(TOKEN)
