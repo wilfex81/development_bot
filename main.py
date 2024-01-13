@@ -145,11 +145,15 @@ async def on_message(message):
         await message.channel.send("Your message contains profanity and cannot be processed.")
         return
 
+    await client.process_commands(message)
+
+
 @client.command()
-@has_permissions(kick_members =True)
+@has_permissions(kick_members=True)
 async def kick(ctx, member: discord.Member, *, reason=None):
     await member.kick(reason=reason)
     await ctx.send(f'User {member} has been kicked')
+
 
 @kick.error
 async def kick_error(ctx, error):
@@ -158,16 +162,31 @@ async def kick_error(ctx, error):
 
 
 @client.command()
-@has_permissions(ban_members =True)
+@has_permissions(ban_members=True)
 async def ban(ctx, member: discord.Member, *, reason=None):
     await member.ban(reason=reason)
     await ctx.send(f'User {member} has been Banned')
+
 
 @ban.error
 async def ban_error(ctx, error):
     if isinstance(error, commands.MissingPermissions):
         await ctx.send("You don't have permissions to ban people!")
 
+
+@client.command()
+async def embed(ctx):
+    embed = discord.Embed(
+        title="Dog", url="https://google.com", description="I love dogs!", color=discord.Color(0x0040ff)
+    )
+    embed.set_author(name=ctx.author.display_name, url="https://testurl.com",
+                     icon_url=ctx.author.avatar)
+    embed.set_thumbnail(
+        url="https://i.pinimg.com/564x/ea/a3/1e/eaa31e7fefc576a7d12eacd09e7606c9.jpg")
+    embed.add_field(name="Labradore", value="cute dogs", inline=True)
+    embed.add_field(name="PUGS", value="cute dogs", inline=True)
+    embed.set_footer(text="Thank you for learning to build this")
+    await ctx.send(embed=embed)
 
 
 TOKEN = os.getenv('BOT_AUTH')
