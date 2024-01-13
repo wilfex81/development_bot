@@ -12,6 +12,15 @@ intents = discord.Intents.all()
 
 client = commands.Bot(command_prefix='!', intents=intents)
 
+queues = {}
+
+
+def check_queue(ctx, id):
+    if id in queues and queues[id] != []:
+        voice = ctx.guild.voice_client
+        source = queues[id].pop(0)
+        player = voice.play(source)
+
 
 @client.event
 async def on_ready():
@@ -58,7 +67,7 @@ async def join(ctx):
     if (ctx.author.voice):
         channel = ctx.author.voice.channel
         voice = await channel.connect()
-        source = discord.FFmpegPCMAudio('music.mp4')
+        source = discord.FFmpegPCMAudio('music.mp3')
         player = voice.play(source)
     else:
         await ctx.send("You must be in a voice channel to run this command!!😡")
@@ -89,6 +98,38 @@ async def resume(ctx):
         voice.resume()
     else:
         await ctx.send("At the moment, no song is paused")
+
+
+@client.command(pass_context=True)
+async def stop(ctx):
+    voice = discord.utils.get(client.voice_clients, guild=ctx.guild)
+    if voice.is_playing():
+        voice.stop()
+    else:
+        await ctx.send("At the moment, no song is playing")
+
+
+@client.command(pass_context=True)
+async def play(ctx, arg):
+    voice = ctx.guild.voice_client
+    source = discord.FFmpegPCMAudio(arg)
+    player = voice.play(source, after=lambda x=None: check_queue(ctx, ctx.guild.id))
+
+
+@client.command(pass_context=True)
+async def queue(ctx, arg):
+    voice = ctx.guild.voice_client
+    source = discord.FFmpegPCMAudio(arg)
+
+    guild_id = ctx.message.guild.id
+
+    if guild_id in queues:
+        queues[guild_id].append(source)
+    else:
+        queues[guild_id] = [source]
+
+    await ctx.send("Added to queue")
+
 
 
 TOKEN = os.getenv('BOT_AUTH')
