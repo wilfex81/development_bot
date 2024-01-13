@@ -1,3 +1,4 @@
+from profanityfilter import ProfanityFilter
 from dotenv import load_dotenv
 import os
 import requests
@@ -113,7 +114,8 @@ async def stop(ctx):
 async def play(ctx, arg):
     voice = ctx.guild.voice_client
     source = discord.FFmpegPCMAudio(arg)
-    player = voice.play(source, after=lambda x=None: check_queue(ctx, ctx.guild.id))
+    player = voice.play(
+        source, after=lambda x=None: check_queue(ctx, ctx.guild.id))
 
 
 @client.command(pass_context=True)
@@ -131,6 +133,14 @@ async def queue(ctx, arg):
     await ctx.send("Added to queue")
 
 
+pf = ProfanityFilter()
+
+@client.event
+async def on_message(message):
+    if pf.is_profane(message.content):
+        await message.delete()
+        await message.channel.send("Your message contains profanity and cannot be processed.")
+        return
 
 TOKEN = os.getenv('BOT_AUTH')
 client.run(TOKEN)
