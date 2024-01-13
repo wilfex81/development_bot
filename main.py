@@ -1,3 +1,4 @@
+from discord import member
 from profanityfilter import ProfanityFilter
 from dotenv import load_dotenv
 import os
@@ -6,6 +7,7 @@ import json
 import discord
 from discord.ext import commands
 from discord import FFmpegPCMAudio
+from discord.ext.commands import has_permissions, MissingPermissions
 
 load_dotenv()
 
@@ -135,12 +137,38 @@ async def queue(ctx, arg):
 
 pf = ProfanityFilter()
 
+
 @client.event
 async def on_message(message):
     if pf.is_profane(message.content):
         await message.delete()
         await message.channel.send("Your message contains profanity and cannot be processed.")
         return
+
+@client.command()
+@has_permissions(kick_members =True)
+async def kick(ctx, member: discord.Member, *, reason=None):
+    await member.kick(reason=reason)
+    await ctx.send(f'User {member} has been kicked')
+
+@kick.error
+async def kick_error(ctx, error):
+    if isinstance(error, commands.MissingPermissions):
+        await ctx.send("You don't have permissions to kick people!")
+
+
+@client.command()
+@has_permissions(ban_members =True)
+async def ban(ctx, member: discord.Member, *, reason=None):
+    await member.ban(reason=reason)
+    await ctx.send(f'User {member} has been Banned')
+
+@ban.error
+async def ban_error(ctx, error):
+    if isinstance(error, commands.MissingPermissions):
+        await ctx.send("You don't have permissions to ban people!")
+
+
 
 TOKEN = os.getenv('BOT_AUTH')
 client.run(TOKEN)
